@@ -1,0 +1,192 @@
+import { createEnvironmentModule } from './modules/environment';
+import { createThemeModule } from './modules/theme';
+import { createLifecycleModule } from './modules/lifecycle';
+import { createDeeplinkModule } from './modules/deeplink';
+import { createStateModule } from './modules/state';
+
+let teamsSDK;
+try {
+  teamsSDK = require('@microsoft/teams-js');
+} catch (e) {
+  teamsSDK = null;
+}
+
+export class TeamsLib {
+  /**
+   * Creates a new TeamsLib instance.
+   *
+   * @param {Object} [config] - Configuration options.
+   * @param {function} [config.onThemeChange] - Called when theme changes. Receives theme name.
+   * @param {function} [config.onBeforeUnload] - Called before tab unloads (Teams only). Enables iframe caching. Receives readyToUnload callback.
+   * @param {function} [config.onResume] - Called when user returns to cached iframe (Teams only). Pair with onBeforeUnload.
+   * @param {function} [config.onFocusEnter] - Called when focus enters tab (Teams only). Receives focus info.
+   * @param {Object} [config.state] - State module options.
+   * @param {boolean} [config.state.persistAcrossSessions] - Use localStorage instead of sessionStorage.
+   */
+  constructor(config = {}) {
+    this._config = config;
+    this._initialized = false;
+
+    // Create modules — pass config callbacks directly
+    this._environment = createEnvironmentModule();
+    this._theme = createThemeModule(config);
+    this._lifecycle = createLifecycleModule(config, teamsSDK || {});
+    this._deeplink = createDeeplinkModule(this._environment, teamsSDK || {});
+    this._state = createStateModule(config.state || {});
+  }
+
+  /**
+   * Initializes the Teams SDK. Detects environment, loads context, sets theme.
+   * Safe to call multiple times — second call is a no-op.
+   *
+   * @returns {Promise<TeamsLib>} The instance (for chaining).
+   */
+  async init() {
+    if (this._initialized) return this;
+
+    try {
+      if (!teamsSDK) {
+        throw new Error('@microsoft/teams-js not available');
+      }
+
+      await teamsSDK.app.initialize();
+      this._environment.setInsideTeams(true);
+
+      const context = await teamsSDK.app.getContext();
+      this._environment.setContext(context);
+
+      // Initialize theme from context
+      const rawTheme = context.app && context.app.theme;
+      this._theme.init(rawTheme);
+
+      // Register SDK theme change handler
+      teamsSDK.app.registerOnThemeChangeHandler((rawTheme) => {
+        this._theme.handleChange(rawTheme);
+      });
+    } catch (e) {
+      // Not inside Teams or SDK unavailable — degrade gracefully
+      this._environment.setInsideTeams(false);
+    }
+
+    // Lifecycle hooks work both inside and outside Teams
+    this._lifecycle.init();
+
+    this._initialized = true;
+    return this;
+  }
+
+  // Environment
+
+  /**
+   * Returns true if running inside Microsoft Teams.
+   * @returns {boolean}
+   */
+  isInsideTeams() {
+    return this._environment.isInsideTeams();
+  }
+
+  /**
+   * Quick guess — checks iframe, nativeInterface, TeamsJS global. Works before init().
+   * @returns {boolean}
+   */
+  isLikelyInsideTeams() {
+    return this._environment.isLikelyInsideTeams();
+  }
+
+  /**
+   * Returns the Teams context object, or null outside Teams.
+   * @returns {Object|null}
+   */
+  getContext() {
+    return this._environment.getContext();
+  }
+
+  /**
+   * Returns the host name — 'Teams', host name from context, or 'Browser'.
+   * @returns {string}
+   */
+  getHostName() {
+    return this._environment.getHostName();
+  }
+
+  // Theme
+
+  /**
+   * Returns current theme: 'light', 'dark', 'contrast', or null.
+   * @returns {string|null}
+   */
+  getTheme() {
+    return this._theme.getCurrent();
+  }
+
+  // Deeplink
+
+  /**
+   * Opens a Microsoft Teams deeplink. Detects the environment and navigates
+   * automatically — SDK APIs inside Teams, window.open() outside.
+   *
+   * Accepts a URL string or an options object. Always returns the deeplink URL.
+   *
+   * @param {string|Object} deeplinkOrOptions - A deeplink URL string, or an options object.
+   * @param {string} [deeplinkOrOptions.appId] - Teams app ID (UUID format). Defaults to app ID from Teams context.
+   * @param {string} [deeplinkOrOptions.tabId] - Tab (page) ID. Omit for app-level links.
+   * @param {Object} [deeplinkOrOptions.context] - Context / subEntity payload.
+   * @param {string} [deeplinkOrOptions.message] - Text message shown when the deeplink is opened.
+   * @param {string} [deeplinkOrOptions.webUrl] - Fallback web URL.
+   * @param {string} [deeplinkOrOptions.label] - Display label.
+   * @returns {Promise<string>} The deeplink URL.
+   *
+   * @example
+   * // App-level
+   * var url = await lib.openDeeplink({ appId: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d' });
+   *
+   * @example
+   * // With message
+   * var url = await lib.openDeeplink({ appId: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', message: 'Open order #42' });
+   *
+   * @example
+   * // Tab-level with context
+   * var url = await lib.openDeeplink({ tabId: 'dash', appId: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', context: { subEntityId: 'r-42' } });
+   *
+   * @example
+   * // By URL string
+   * var url = await lib.openDeeplink('https://teams.microsoft.com/l/entity/1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d');
+   */
+  async openDeeplink(deeplinkOrOptions) {
+    return this._deeplink.open(deeplinkOrOptions);
+  }
+
+  // State
+
+  /**
+   * Saves state to sessionStorage (or localStorage if persistAcrossSessions is true).
+   * @param {Object} stateObj - Any JSON-serializable object.
+   */
+  saveState(stateObj) {
+    this._state.save(stateObj);
+  }
+
+  /**
+   * Returns saved state, or null if nothing saved.
+   * @returns {Object|null}
+   */
+  getState() {
+    return this._state.get();
+  }
+
+  /**
+   * Removes saved state.
+   */
+  clearState() {
+    this._state.clear();
+  }
+
+  // Cleanup
+
+  /**
+   * Removes lifecycle listeners. Call when done.
+   */
+  destroy() {
+    this._lifecycle.destroy();
+  }
+}
