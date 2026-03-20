@@ -29,8 +29,8 @@ export function createDeeplinkModule(environmentModule, teamsSDK) {
     return url;
   }
 
-  function _getAppIdFromContext() {
-    const ctx = environmentModule.getContext();
+  async function _getAppIdFromContext() {
+    const ctx = await environmentModule.getContext();
     if (ctx && ctx.app && ctx.app.appId) return ctx.app.appId;
     return null;
   }
@@ -79,7 +79,7 @@ export function createDeeplinkModule(environmentModule, teamsSDK) {
 
       // Options object path — build URL
       const { tabId, context, appId, message, webUrl, label } = deeplinkOrOptions;
-      const resolvedAppId = appId || _getAppIdFromContext();
+      const resolvedAppId = appId || await _getAppIdFromContext();
       const url = _buildDeeplinkUrl(resolvedAppId, { tabId, context, message, webUrl, label });
 
       // Navigate

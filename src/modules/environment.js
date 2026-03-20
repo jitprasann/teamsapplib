@@ -1,14 +1,9 @@
-export function createEnvironmentModule() {
+export function createEnvironmentModule(teamsSDK) {
   let _insideTeams = false;
-  let _context = null;
 
   return {
     setInsideTeams(value) {
       _insideTeams = value;
-    },
-
-    setContext(context) {
-      _context = context;
     },
 
     isInsideTeams() {
@@ -28,15 +23,19 @@ export function createEnvironmentModule() {
       }
     },
 
-    getContext() {
-      return _context;
+    async getContext() {
+      if (!_insideTeams || !teamsSDK || !teamsSDK.app ||
+          typeof teamsSDK.app.getContext !== 'function') {
+        return null;
+      }
+      return teamsSDK.app.getContext();
     },
 
-    getHostName() {
-      if (!_context) return 'Browser';
-      const hostName = _context.app && _context.app.host && _context.app.host.name;
-      if (hostName) return hostName;
-      return _insideTeams ? 'Teams' : 'Browser';
+    async getHostName() {
+      if (!_insideTeams) return 'Browser';
+      const ctx = await this.getContext();
+      const hostName = ctx && ctx.app && ctx.app.host && ctx.app.host.name;
+      return hostName || 'Teams';
     },
   };
 }

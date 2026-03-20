@@ -3,23 +3,36 @@ function normalizeTheme(raw) {
   return raw;
 }
 
-export function createThemeModule(callbacks) {
-  let _currentTheme = null;
+function detectBrowserTheme() {
+  try {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-contrast: more)').matches) {
+      return 'contrast';
+    }
+  } catch (e) {
+    // matchMedia not available
+  }
+  return 'light';
+}
 
+export function createThemeModule(callbacks, environmentModule) {
   return {
-    init(rawTheme) {
-      if (rawTheme) {
-        _currentTheme = normalizeTheme(rawTheme);
-      }
+    init() {
+      // no-op — theme is read live, not cached
     },
 
-    getCurrent() {
-      return _currentTheme;
+    async getCurrent() {
+      const ctx = await environmentModule.getContext();
+      if (ctx && ctx.app && ctx.app.theme) {
+        return normalizeTheme(ctx.app.theme);
+      }
+      return detectBrowserTheme();
     },
 
     handleChange(rawTheme) {
       const theme = normalizeTheme(rawTheme);
-      _currentTheme = theme;
       if (typeof callbacks.onThemeChange === 'function') {
         callbacks.onThemeChange(theme);
       }

@@ -22,15 +22,15 @@ var lib = TeamsLib.getInstance({
 
 await lib.init();
 
-lib.isInsideTeams(); // true or false
-lib.getTheme();      // 'light', 'dark', 'contrast', or null
+lib.isInsideTeams();        // true or false
+await lib.getTheme();       // 'light', 'dark', or 'contrast'
 ```
 
 ```js
 // Elsewhere in your app — same instance, init() is a no-op
 var lib = TeamsLib.getInstance();
 await lib.init(); // already initialized, skips
-lib.getTheme();
+await lib.getTheme();
 ```
 
 ## API
@@ -85,28 +85,28 @@ if (lib.isLikelyInsideTeams()) { /* probably Teams */ }
 
 ### getContext()
 
-Returns the Teams context object, or `null` outside Teams.
+Returns the Teams context object, or `null` outside Teams. Always fetches fresh from the SDK.
 
 ```js
-var ctx = lib.getContext();
+var ctx = await lib.getContext();
 // ctx.app.appId, ctx.user, ctx.channel, etc.
 ```
 
 ### getHostName()
 
-Returns `'Teams'`, a host name from context, or `'Browser'`.
+Returns `'Teams'`, a host name from context, or `'Browser'`. Always fetches fresh from the SDK.
 
 ```js
-lib.getHostName(); // 'Teams' or 'Browser'
+await lib.getHostName(); // 'Teams' or 'Browser'
 ```
 
 ### getTheme()
 
-Returns `'light'`, `'dark'`, `'contrast'`, or `null`.
+Returns `'light'`, `'dark'`, or `'contrast'`. Inside Teams, reads from fresh context. Outside Teams, detects from `prefers-color-scheme` / `prefers-contrast`.
 
 ```js
-var theme = lib.getTheme();
-document.body.className = theme || 'light';
+var theme = await lib.getTheme();
+document.body.className = theme;
 ```
 
 The SDK's `"default"` theme is normalized to `"light"`.

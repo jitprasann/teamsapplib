@@ -30,8 +30,8 @@ export class TeamsLib {
     this._initialized = false;
 
     // Create modules — pass config callbacks directly
-    this._environment = createEnvironmentModule();
-    this._theme = createThemeModule(config);
+    this._environment = createEnvironmentModule(teamsSDK);
+    this._theme = createThemeModule(config, this._environment);
     this._lifecycle = createLifecycleModule(config, teamsSDK || {});
     this._deeplink = createDeeplinkModule(this._environment, teamsSDK || {});
     this._state = createStateModule(config.state || {});
@@ -67,13 +67,6 @@ export class TeamsLib {
 
       await teamsSDK.app.initialize();
       this._environment.setInsideTeams(true);
-
-      const context = await teamsSDK.app.getContext();
-      this._environment.setContext(context);
-
-      // Initialize theme from context
-      const rawTheme = context.app && context.app.theme;
-      this._theme.init(rawTheme);
 
       // Register SDK theme change handler
       teamsSDK.app.registerOnThemeChangeHandler((rawTheme) => {
@@ -114,27 +107,29 @@ export class TeamsLib {
 
   /**
    * Returns the Teams context object, or null outside Teams.
-   * @returns {Object|null}
+   * Always fetches fresh from the SDK.
+   * @returns {Promise<Object|null>}
    */
-  getContext() {
+  async getContext() {
     return this._environment.getContext();
   }
 
   /**
    * Returns the host name — 'Teams', host name from context, or 'Browser'.
-   * @returns {string}
+   * @returns {Promise<string>}
    */
-  getHostName() {
+  async getHostName() {
     return this._environment.getHostName();
   }
 
   // Theme
 
   /**
-   * Returns current theme: 'light', 'dark', 'contrast', or null.
-   * @returns {string|null}
+   * Returns current theme: 'light', 'dark', or 'contrast'.
+   * Inside Teams fetches fresh from context; outside Teams uses prefers-color-scheme.
+   * @returns {Promise<string>}
    */
-  getTheme() {
+  async getTheme() {
     return this._theme.getCurrent();
   }
 

@@ -23,7 +23,9 @@ Load the Teams SDK and this library with script tags. The library is available a
 
     lib.init().then(function () {
         console.log("Inside Teams:", lib.isInsideTeams());
-        console.log("Theme:", lib.getTheme());
+        lib.getTheme().then(function (theme) {
+            console.log("Theme:", theme);
+        });
     });
 </script>
 ```
@@ -58,7 +60,9 @@ require(["teams-lib"], function (TeamsLib) {
 
     lib.init().then(function () {
         console.log("Inside Teams:", lib.isInsideTeams());
-        console.log("Theme:", lib.getTheme());
+        lib.getTheme().then(function (theme) {
+            console.log("Theme:", theme);
+        });
     });
 });
 ```
@@ -70,7 +74,9 @@ define(["teams-lib"], function (TeamsLib) {
     var lib = TeamsLib.getInstance();
     lib.init().then(function () {
         // already initialized, skips straight through
-        console.log("Theme:", lib.getTheme());
+        lib.getTheme().then(function (theme) {
+            console.log("Theme:", theme);
+        });
     });
 });
 ```
@@ -113,17 +119,21 @@ A complete example showing all features.
             lib.init().then(function () {
                 // --- Environment ---
                 console.log("Inside Teams:", lib.isInsideTeams());
-                console.log("Host:", lib.getHostName());
+                lib.getHostName().then(function (host) {
+                    console.log("Host:", host);
+                });
 
                 // --- Theme ---
-                var theme = lib.getTheme() || "light";
-                document.body.className = theme;
+                lib.getTheme().then(function (theme) {
+                    document.body.className = theme;
+                });
 
                 // --- Context ---
-                var ctx = lib.getContext();
-                if (ctx) {
-                    console.log("App ID:", ctx.app.appId);
-                }
+                lib.getContext().then(function (ctx) {
+                    if (ctx) {
+                        console.log("App ID:", ctx.app.appId);
+                    }
+                });
 
                 // --- State ---
                 lib.saveState({ page: "home", scrollY: 0 });
@@ -216,8 +226,8 @@ define(["marionette", "teams-lib"], function (Marionette, TeamsLib) {
             var self = this;
 
             this.teamsLib.init().then(function () {
-                var theme = self.teamsLib.getTheme() || "light";
-
+                return self.teamsLib.getTheme();
+            }).then(function (theme) {
                 self.rootView = new RootLayout({ theme: theme });
                 self.getRegion().show(self.rootView);
 
@@ -245,9 +255,9 @@ new MicrosoftlibTeams(config)          Create a new instance directly
 
 lib.init()                        Start SDK, returns Promise (no-op if already called)
 lib.isInsideTeams()               true if inside Teams
-lib.getContext()                  Teams context object or null
-lib.getHostName()                 'Teams', host name, or 'Browser'
-lib.getTheme()                    'light', 'dark', 'contrast', or null
+lib.getContext()                  Promise — fresh Teams context or null
+lib.getHostName()                 Promise — 'Teams', host name, or 'Browser'
+lib.getTheme()                    Promise — 'light', 'dark', or 'contrast'
 
 lib.openDeeplink(urlOrOptions)    Open deeplink, returns Promise<url>
   options.appId                   Teams app ID
