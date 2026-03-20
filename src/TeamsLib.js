@@ -68,10 +68,12 @@ export class TeamsLib {
       await teamsSDK.app.initialize();
       this._environment.setInsideTeams(true);
 
-      // Register SDK theme change handler
-      teamsSDK.app.registerOnThemeChangeHandler((rawTheme) => {
-        this._theme.handleChange(rawTheme);
-      });
+      // Register SDK theme change handler (v2 API, must be before notifySuccess)
+      if (typeof teamsSDK.app.registerOnThemeChangeHandler === 'function') {
+        teamsSDK.app.registerOnThemeChangeHandler((rawTheme) => {
+          this._theme.handleChange(rawTheme);
+        });
+      }
 
       // Register lifecycle handlers after SDK is initialized
       this._lifecycle.init();
