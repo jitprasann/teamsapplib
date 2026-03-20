@@ -16,7 +16,7 @@ const commonConfig = {
     '@microsoft/teams-js': {
       commonjs: '@microsoft/teams-js',
       commonjs2: '@microsoft/teams-js',
-      amd: '@microsoft/teams-js',
+      amd: 'microsoftTeams',
       root: 'microsoftTeams',
     },
   },

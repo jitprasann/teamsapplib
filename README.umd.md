@@ -33,10 +33,12 @@ Load the Teams SDK and this library with script tags. The library is available a
 
 ### Config
 
+The path key **must** be `"microsoftTeams"` — `MicrosoftTeams.min.js` registers itself as a named AMD module with that exact name.
+
 ```js
 require.config({
     paths: {
-        "teams-sdk":
+        "microsoftTeams":
             "https://res.cdn.office.net/teams-js/2.0.0/js/MicrosoftTeams.min",
         "teams-lib": "path/to/teams.umd.min",
     },
@@ -158,6 +160,8 @@ A complete example showing all features.
 ```js
 require.config({
     paths: {
+        "microsoftTeams":
+            "https://res.cdn.office.net/teams-js/2.0.0/js/MicrosoftTeams.min",
         "teams-lib": "path/to/teams.umd.min",
     },
 });

@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "Bash(ls:*)",
+      "Bash(npm run:*)"
     ]
   }
 }
