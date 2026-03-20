@@ -150,6 +150,46 @@ var url = await lib.openDeeplink('https://teams.microsoft.com/l/entity/com.examp
 | `webUrl` | string | Fallback URL for outside Teams. |
 | `label` | string | Display label. |
 
+### shareDeeplink(options)
+
+Shares a Teams deeplink. Inside Teams, opens the native share dialog. Outside Teams, falls back to `window.open()`.
+
+Returns `{ shared, url }` — `shared` is `false` if the user cancelled or an error occurred.
+
+```js
+// Share an app link
+var result = await lib.shareDeeplink({ appId: 'com.example.app' });
+if (result.shared) {
+  console.log('Shared:', result.url);
+}
+
+// Share with a message
+var result = await lib.shareDeeplink({
+  appId: 'com.example.app',
+  message: 'Check this out!'
+});
+
+// Share a specific tab with context
+var result = await lib.shareDeeplink({
+  appId: 'com.example.app',
+  tabId: 'dashboard',
+  context: { subEntityId: 'item-1' },
+  message: 'Look at this dashboard'
+});
+```
+
+**Options:**
+
+| Name | Type | Description |
+|---|---|---|
+| `appId` | string | Teams app ID (UUID). **Required** — not auto-detected. |
+| `tabId` | string | Tab ID. Skip for app-level links. |
+| `context` | object | Data to pass to the app (subEntity payload). |
+| `message` | string | Text shown in the share dialog. |
+| `webUrl` | string | Fallback URL for outside Teams. |
+| `label` | string | Display label. |
+| `preview` | boolean | Show link preview in the share dialog (Teams only). |
+
 ### saveState(obj) / getState() / clearState()
 
 Save and load JSON state. Uses `sessionStorage` by default.

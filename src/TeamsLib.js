@@ -172,6 +172,39 @@ export class TeamsLib {
     return this._deeplink.open(deeplinkOrOptions);
   }
 
+  /**
+   * Shares a Microsoft Teams deeplink. Inside Teams, opens the native share
+   * dialog. Outside Teams, falls back to window.open().
+   *
+   * Returns `{ shared, url }` — `shared` is false if the user cancelled or
+   * an error occurred during sharing.
+   *
+   * @param {Object} options - Share options.
+   * @param {string} options.appId - Teams app ID (UUID format). Always required.
+   * @param {string} [options.tabId] - Tab (page) ID.
+   * @param {Object} [options.context] - Context / subEntity payload.
+   * @param {string} [options.message] - Text shown in the share dialog.
+   * @param {string} [options.webUrl] - Fallback web URL.
+   * @param {string} [options.label] - Display label.
+   * @param {boolean} [options.preview] - Show link preview (Teams only).
+   * @returns {Promise<{shared: boolean, url: string}>}
+   *
+   * @example
+   * var result = await lib.shareDeeplink({ appId: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d' });
+   * if (result.shared) { console.log('Shared:', result.url); }
+   *
+   * @example
+   * var result = await lib.shareDeeplink({
+   *   appId: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
+   *   tabId: 'dashboard',
+   *   context: { subEntityId: 'item-1' },
+   *   message: 'Check this out!'
+   * });
+   */
+  async shareDeeplink(options) {
+    return this._deeplink.share(options);
+  }
+
   // State
 
   /**

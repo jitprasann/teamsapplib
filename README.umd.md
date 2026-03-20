@@ -160,6 +160,27 @@ A complete example showing all features.
                 lib.openDeeplink(
                     "https://teams.microsoft.com/l/entity/com.example.app",
                 );
+
+                // --- Share Deeplinks ---
+
+                // Share an app link (native dialog inside Teams, window.open outside)
+                lib.shareDeeplink({ appId: "com.example.app" }).then(
+                    function (result) {
+                        if (result.shared) {
+                            console.log("Shared:", result.url);
+                        }
+                    },
+                );
+
+                // Share with a message and context
+                lib.shareDeeplink({
+                    appId: "com.example.app",
+                    tabId: "dashboard",
+                    context: { subEntityId: "item-1" },
+                    message: "Check this out!",
+                }).then(function (result) {
+                    console.log("Shared:", result.shared, result.url);
+                });
             });
         </script>
     </body>
@@ -234,6 +255,15 @@ lib.openDeeplink(urlOrOptions)    Open deeplink, returns Promise<url>
   options.context                 data to pass to app (optional)
   options.webUrl                  fallback URL (optional)
   options.label                   display label (optional)
+
+lib.shareDeeplink(options)        Share deeplink, returns Promise<{shared, url}>
+  options.appId                   Teams app ID (required)
+  options.tabId                   tab ID (optional)
+  options.context                 data to pass to app (optional)
+  options.message                 share dialog text (optional)
+  options.webUrl                  fallback URL (optional)
+  options.label                   display label (optional)
+  options.preview                 show link preview (optional, Teams only)
 
 lib.saveState(obj)                Save JSON to sessionStorage
 lib.getState()                    Load saved state or null
