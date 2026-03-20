@@ -14,7 +14,8 @@ Load the Teams SDK and this library with script tags. The library is available a
 
 <script>
     // MicrosoftlibTeams is the TeamsLib class
-    var lib = new MicrosoftlibTeams({
+    // Use getInstance() — returns the same instance everywhere
+    var lib = MicrosoftlibTeams.getInstance({
         onThemeChange: function (theme) {
             document.body.className = theme;
         },
@@ -49,7 +50,7 @@ require.config({
 
 ```js
 require(["teams-lib"], function (TeamsLib) {
-    var lib = new TeamsLib({
+    var lib = TeamsLib.getInstance({
         onThemeChange: function (theme) {
             document.body.className = theme;
         },
@@ -57,6 +58,18 @@ require(["teams-lib"], function (TeamsLib) {
 
     lib.init().then(function () {
         console.log("Inside Teams:", lib.isInsideTeams());
+        console.log("Theme:", lib.getTheme());
+    });
+});
+```
+
+Other modules get the same instance — `init()` is a no-op if already called:
+
+```js
+define(["teams-lib"], function (TeamsLib) {
+    var lib = TeamsLib.getInstance();
+    lib.init().then(function () {
+        // already initialized, skips straight through
         console.log("Theme:", lib.getTheme());
     });
 });
@@ -77,7 +90,7 @@ A complete example showing all features.
     </head>
     <body>
         <script>
-            var lib = new MicrosoftlibTeams({
+            var lib = MicrosoftlibTeams.getInstance({
                 // Called when Teams theme changes
                 onThemeChange: function (theme) {
                     // theme = 'light', 'dark', or 'contrast'
@@ -171,7 +184,7 @@ define(["marionette", "teams-lib"], function (Marionette, TeamsLib) {
         onBeforeStart: function () {
             var self = this;
 
-            this.teamsLib = new TeamsLib({
+            this.teamsLib = TeamsLib.getInstance({
                 onThemeChange: function (theme) {
                     self.rootView.applyTheme(theme);
                 },
@@ -201,13 +214,15 @@ define(["marionette", "teams-lib"], function (Marionette, TeamsLib) {
 ## API Quick Reference
 
 ```
-new MicrosoftlibTeams(config)     Create instance with callbacks
+MicrosoftlibTeams.getInstance(config)  Singleton — same instance everywhere
+new MicrosoftlibTeams(config)          Create a new instance directly
+
   config.onThemeChange(theme)     'light', 'dark', or 'contrast'
   config.onBeforeUnload(ready)    enables iframe caching, call ready() when done
   config.onResume()               fired on return to cached iframe
   config.onFocusEnter(info)       focus entered tab
 
-lib.init()                        Start SDK, returns Promise
+lib.init()                        Start SDK, returns Promise (no-op if already called)
 lib.isInsideTeams()               true if inside Teams
 lib.getContext()                  Teams context object or null
 lib.getHostName()                 'Teams', host name, or 'Browser'

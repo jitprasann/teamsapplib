@@ -15,7 +15,8 @@ npm install @microsoftlib/teams @microsoft/teams-js@^2.0.0
 ```js
 import { TeamsLib } from '@microsoftlib/teams';
 
-var lib = new TeamsLib({
+// Use getInstance() to get a singleton — same instance everywhere
+var lib = TeamsLib.getInstance({
   onThemeChange: function(theme) { console.log('Theme:', theme); }
 });
 
@@ -25,14 +26,21 @@ lib.isInsideTeams(); // true or false
 lib.getTheme();      // 'light', 'dark', 'contrast', or null
 ```
 
+```js
+// Elsewhere in your app — same instance, init() is a no-op
+var lib = TeamsLib.getInstance();
+await lib.init(); // already initialized, skips
+lib.getTheme();
+```
+
 ## API
 
-### new TeamsLib(config)
+### TeamsLib.getInstance(config)
 
-Creates a new instance. All config callbacks are optional.
+Returns the singleton instance. First call creates it with the provided config; subsequent calls return the same instance (config is ignored after the first call).
 
 ```js
-var lib = new TeamsLib({
+var lib = TeamsLib.getInstance({
   onThemeChange: function(theme) {},         // 'light', 'dark', or 'contrast'
   onBeforeUnload: function(readyToUnload) {},// enables iframe caching (Teams only)
   onResume: function() {},                   // fired on return to cached iframe (Teams only)
@@ -41,15 +49,23 @@ var lib = new TeamsLib({
 });
 ```
 
+### new TeamsLib(config)
+
+Creates a new instance directly. Use `getInstance()` when you need a shared singleton across modules.
+
+```js
+var lib = new TeamsLib({ onThemeChange: function(theme) {} });
+```
+
 ### init()
 
-Starts the Teams SDK. Detects environment, loads context, sets theme. Safe to call twice.
+Starts the Teams SDK. Detects environment, loads context, sets theme. If already initialized, returns immediately — safe to call from multiple places.
 
 ```js
 await lib.init();
 ```
 
-Returns the instance so you can chain: `var lib = await new TeamsLib().init();`
+Returns the instance so you can chain: `var lib = await TeamsLib.getInstance().init();`
 
 ### isInsideTeams()
 

@@ -11,6 +11,8 @@ try {
   teamsSDK = null;
 }
 
+let _instance = null;
+
 export class TeamsLib {
   /**
    * Creates a new TeamsLib instance.
@@ -36,8 +38,22 @@ export class TeamsLib {
   }
 
   /**
+   * Returns the singleton instance. Creates one on the first call using the
+   * provided config; subsequent calls return the same instance (config ignored).
+   *
+   * @param {Object} [config] - Configuration options (same as constructor).
+   * @returns {TeamsLib}
+   */
+  static getInstance(config) {
+    if (!_instance) {
+      _instance = new TeamsLib(config);
+    }
+    return _instance;
+  }
+
+  /**
    * Initializes the Teams SDK. Detects environment, loads context, sets theme.
-   * Safe to call multiple times — second call is a no-op.
+   * If already initialized, returns immediately — safe to call from multiple places.
    *
    * @returns {Promise<TeamsLib>} The instance (for chaining).
    */
