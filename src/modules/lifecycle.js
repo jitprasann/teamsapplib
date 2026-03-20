@@ -1,16 +1,23 @@
 export function createLifecycleModule(callbacks, teamsSDK) {
   return {
     init() {
-      // onBeforeUnload — registers registerBeforeUnloadHandler with Teams.
-      // This tells Teams desktop to CACHE the iframe instead of destroying it.
-      // Only register if the caller provides this callback.
+      // onBeforeUnload — tells Teams desktop to CACHE the iframe instead of
+      // destroying it. Prefer the newer registerBeforeSuspendOrTerminateHandler
+      // (promise-based) and fall back to registerBeforeUnloadHandler (callback-based).
       try {
-        if (typeof callbacks.onBeforeUnload === 'function' &&
-            teamsSDK.teamsCore &&
-            typeof teamsSDK.teamsCore.registerBeforeUnloadHandler === 'function') {
-          teamsSDK.teamsCore.registerBeforeUnloadHandler((readyToUnload) => {
-            callbacks.onBeforeUnload(readyToUnload);
-          });
+        if (typeof callbacks.onBeforeUnload === 'function' && teamsSDK.teamsCore) {
+          if (typeof teamsSDK.teamsCore.registerBeforeSuspendOrTerminateHandler === 'function') {
+            teamsSDK.teamsCore.registerBeforeSuspendOrTerminateHandler(() => {
+              return new Promise((resolve) => {
+                callbacks.onBeforeUnload(resolve);
+              });
+            });
+          } else if (typeof teamsSDK.teamsCore.registerBeforeUnloadHandler === 'function') {
+            teamsSDK.teamsCore.registerBeforeUnloadHandler((readyToUnload) => {
+              callbacks.onBeforeUnload(readyToUnload);
+              return true;
+            });
+          }
         }
       } catch (e) {
         // Not supported — skip
@@ -24,6 +31,7 @@ export function createLifecycleModule(callbacks, teamsSDK) {
             typeof teamsSDK.app.lifecycle.registerOnResumeHandler === 'function') {
           teamsSDK.app.lifecycle.registerOnResumeHandler(() => {
             callbacks.onResume();
+            teamsSDK.app.notifySuccess();
           });
         }
       } catch (e) {

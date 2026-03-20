@@ -79,13 +79,16 @@ export class TeamsLib {
       teamsSDK.app.registerOnThemeChangeHandler((rawTheme) => {
         this._theme.handleChange(rawTheme);
       });
+
+      // Register lifecycle handlers after SDK is initialized
+      this._lifecycle.init();
+
+      // Tell Teams the app loaded successfully
+      teamsSDK.app.notifySuccess();
     } catch (e) {
       // Not inside Teams or SDK unavailable — degrade gracefully
       this._environment.setInsideTeams(false);
     }
-
-    // Lifecycle hooks work both inside and outside Teams
-    this._lifecycle.init();
 
     this._initialized = true;
     return this;
