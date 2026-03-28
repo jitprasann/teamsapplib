@@ -3,7 +3,11 @@
     "allow": [
       "WebSearch",
       "Bash(ls:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(grep -E \"\\\\.\\(js|json\\)$\")",
+      "Bash(rm \"D:/Project/microsoftlib/src/modules/state.js\")",
+      "Bash(rm \"D:/Project/microsoftlib/test/modules/state.test.js\")",
+      "Bash(rm \"D:/Project/microsoftlib/test/modules/deeplink.test.js\")"
     ]
   }
 }

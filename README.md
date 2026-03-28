@@ -45,7 +45,6 @@ var lib = TeamsLib.getInstance({
   onBeforeUnload: function(readyToUnload) {},// enables iframe caching (Teams only)
   onResume: function() {},                   // fired on return to cached iframe (Teams only)
   onFocusEnter: function(info) {},           // focus entered tab (Teams only)
-  state: { persistAcrossSessions: false }    // true = use localStorage
 });
 ```
 
@@ -111,45 +110,6 @@ document.body.className = theme;
 
 The SDK's `"default"` theme is normalized to `"light"`.
 
-### openDeeplink(deeplinkOrOptions)
-
-Opens a Teams deeplink. Detects environment and handles navigation automatically.
-Returns the deeplink URL.
-
-- Inside Teams: uses SDK navigation
-- Outside Teams: uses `window.open()`
-
-```js
-// Open an app (app-level, no tab)
-var url = await lib.openDeeplink({ appId: 'com.example.app' });
-
-// Open an app and pass data (no tab needed)
-var url = await lib.openDeeplink({
-  appId: 'com.example.app',
-  context: { subEntityId: 'record-42' }
-});
-
-// Open a specific tab
-var url = await lib.openDeeplink({
-  appId: 'com.example.app',
-  tabId: 'dashboard',
-  context: { subEntityId: 'item-1' }
-});
-
-// Open a URL string directly
-var url = await lib.openDeeplink('https://teams.microsoft.com/l/entity/com.example.app');
-```
-
-**Options:**
-
-| Name | Type | Description |
-|---|---|---|
-| `appId` | string | Teams app ID. Auto-detected from context if not provided. |
-| `tabId` | string | Tab ID. Skip for app-level links. |
-| `context` | object | Data to pass to the app (subEntity payload). |
-| `webUrl` | string | Fallback URL for outside Teams. |
-| `label` | string | Display label. |
-
 ### shareDeeplink(urlOrOptions)
 
 Shares content via the Teams share dialog or Web Share API. Supports URL, text, or both.
@@ -200,19 +160,6 @@ var result = await lib.shareDeeplink({
 | `webUrl` | string | Fallback URL for outside Teams. |
 | `label` | string | Display label. |
 | `preview` | boolean | Show link preview in the share dialog (Teams only). |
-
-### saveState(obj) / getState() / clearState()
-
-Save and load JSON state. Uses `sessionStorage` by default.
-
-```js
-lib.saveState({ page: 'settings', id: 42 });
-lib.getState();   // { page: 'settings', id: 42 }
-lib.clearState();
-lib.getState();   // null
-```
-
-Works without `init()`. Use `state: { persistAcrossSessions: true }` in config for `localStorage`.
 
 ### destroy()
 

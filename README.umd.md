@@ -135,42 +135,6 @@ A complete example showing all features.
                     }
                 });
 
-                // --- State ---
-                lib.saveState({ page: "home", scrollY: 0 });
-                var state = lib.getState();
-                // state = { page: 'home', scrollY: 0 }
-
-                // --- Deeplinks ---
-
-                // Open an app (no specific tab)
-                lib.openDeeplink({ appId: "com.example.app" }).then(
-                    function (url) {
-                        console.log("Opened:", url);
-                    },
-                );
-
-                // Open an app and pass data
-                lib.openDeeplink({
-                    appId: "com.example.app",
-                    context: { subEntityId: "record-42" },
-                }).then(function (url) {
-                    console.log("Opened:", url);
-                });
-
-                // Open a specific tab
-                lib.openDeeplink({
-                    appId: "com.example.app",
-                    tabId: "dashboard",
-                    context: { subEntityId: "item-1" },
-                }).then(function (url) {
-                    console.log("Opened:", url);
-                });
-
-                // Open by URL string
-                lib.openDeeplink(
-                    "https://teams.microsoft.com/l/entity/com.example.app",
-                );
-
                 // --- Share ---
 
                 // Share a URL
@@ -272,13 +236,6 @@ lib.getContext()                  Promise — fresh Teams context or null
 lib.getHostName()                 Promise — 'Teams', host name, or 'Browser'
 lib.getTheme()                    Promise — 'light', 'dark', or 'contrast'
 
-lib.openDeeplink(urlOrOptions)    Open deeplink, returns Promise<url>
-  options.appId                   Teams app ID
-  options.tabId                   tab ID (optional)
-  options.context                 data to pass to app (optional)
-  options.webUrl                  fallback URL (optional)
-  options.label                   display label (optional)
-
 lib.shareDeeplink(urlOrOptions)   Share content, returns Promise<{shared, url?, text?}>
   'https://...'                   share a URL string
   options.url                     URL to share
@@ -290,10 +247,6 @@ lib.shareDeeplink(urlOrOptions)   Share content, returns Promise<{shared, url?, 
   options.webUrl                  fallback URL (optional)
   options.label                   display label (optional)
   options.preview                 show link preview (optional, Teams only)
-
-lib.saveState(obj)                Save JSON to sessionStorage
-lib.getState()                    Load saved state or null
-lib.clearState()                  Remove saved state
 
 lib.destroy()                     Clean up listeners
 ```
