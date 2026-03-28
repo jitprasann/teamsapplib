@@ -171,18 +171,31 @@ A complete example showing all features.
                     "https://teams.microsoft.com/l/entity/com.example.app",
                 );
 
-                // --- Share Deeplinks ---
+                // --- Share ---
 
-                // Share an app link (native dialog inside Teams, window.open outside)
-                lib.shareDeeplink({ appId: "com.example.app" }).then(
+                // Share a URL
+                lib.shareDeeplink("https://example.com/report/42").then(
                     function (result) {
-                        if (result.shared) {
-                            console.log("Shared:", result.url);
-                        }
+                        console.log("Shared:", result.shared, result.url);
                     },
                 );
 
-                // Share with a message and context
+                // Share text only
+                lib.shareDeeplink({
+                    text: "Hey, check out the Q3 numbers!",
+                }).then(function (result) {
+                    console.log("Shared:", result.shared);
+                });
+
+                // Share URL + text
+                lib.shareDeeplink({
+                    url: "https://example.com/report/42",
+                    text: "Check this report!",
+                }).then(function (result) {
+                    console.log("Shared:", result.shared, result.url);
+                });
+
+                // Share a Teams deeplink (built from appId)
                 lib.shareDeeplink({
                     appId: "com.example.app",
                     tabId: "dashboard",
@@ -266,11 +279,14 @@ lib.openDeeplink(urlOrOptions)    Open deeplink, returns Promise<url>
   options.webUrl                  fallback URL (optional)
   options.label                   display label (optional)
 
-lib.shareDeeplink(options)        Share deeplink, returns Promise<{shared, url}>
-  options.appId                   Teams app ID (required)
+lib.shareDeeplink(urlOrOptions)   Share content, returns Promise<{shared, url?, text?}>
+  'https://...'                   share a URL string
+  options.url                     URL to share
+  options.text                    text content to share
+  options.message                 share dialog text (Teams) / fallback text
+  options.appId                   Teams app ID — builds a deeplink
   options.tabId                   tab ID (optional)
   options.context                 data to pass to app (optional)
-  options.message                 share dialog text (optional)
   options.webUrl                  fallback URL (optional)
   options.label                   display label (optional)
   options.preview                 show link preview (optional, Teams only)
