@@ -20,6 +20,9 @@
   "keywords": ["microsoft", "teams", "teams-js", "tab", "deeplink"],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "@microsoft/teams-js": "^2.0.0"
+  },
   "peerDependencies": {
     "@microsoft/teams-js": "^2.0.0"
   },

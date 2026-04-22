@@ -12,16 +12,17 @@ const commonConfig = {
       },
     ],
   },
-  externals: {
-    '@microsoft/teams-js': {
-      commonjs: '@microsoft/teams-js',
-      commonjs2: '@microsoft/teams-js',
-      amd: 'microsoftTeams',
-      root: 'microsoftTeams',
-    },
-  },
   resolve: {
     extensions: ['.js'],
+  },
+};
+
+const teamsJsExternal = {
+  '@microsoft/teams-js': {
+    commonjs: '@microsoft/teams-js',
+    commonjs2: '@microsoft/teams-js',
+    amd: 'microsoftTeams',
+    root: 'microsoftTeams',
   },
 };
 
@@ -74,6 +75,7 @@ const cjsConfig = {
       type: 'commonjs2',
     },
   },
+  externals: teamsJsExternal,
   optimization: {
     minimize: false,
   },
